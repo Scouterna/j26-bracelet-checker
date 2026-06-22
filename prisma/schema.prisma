@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Location {
+  id       String    @id @default(uuid())
+  name     String
+  active   Boolean   @default(true)
+  handouts Handout[]
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  handouts    Handout[]
+}
+
+model Handout {
+  id          String    @id @default(uuid())
+  braceletId  String
+  product     Product   @relation(fields: [productId], references: [id])
+  productId   String
+  location    Location? @relation(fields: [locationId], references: [id])
+  locationId  String?
+  handedOutBy String?
+  handedOutAt DateTime  @default(now())
+
+  @@unique([braceletId, productId])
+}
