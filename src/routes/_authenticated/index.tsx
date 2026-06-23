@@ -75,7 +75,8 @@ function ScanPage() {
 		} catch (err) {
 			if ((err as { name?: string }).name !== "AbortError") {
 				setNfcActive(false);
-				setNfcError("Kunde inte starta NFC-läsning.");
+				const e = err as { name?: string; message?: string };
+				setNfcError(`Kunde inte starta NFC-läsning. (${e.name}: ${e.message})`);
 			}
 		}
 	}
