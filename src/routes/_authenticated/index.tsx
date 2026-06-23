@@ -75,8 +75,7 @@ function ScanPage() {
 		} catch (err) {
 			if ((err as { name?: string }).name !== "AbortError") {
 				setNfcActive(false);
-				const e = err as { name?: string; message?: string };
-				setNfcError(`Kunde inte starta NFC-läsning. (${e.name}: ${e.message})`);
+				setNfcError("Kunde inte starta NFC-läsning.");
 			}
 		}
 	}
@@ -263,6 +262,19 @@ function ScanPage() {
 							<>
 								<span className="text-6xl">📱</span>
 								<p className="text-base font-medium">Håll armband mot telefonen</p>
+							</>
+						) : window.self !== window.top ? (
+							<>
+								<span className="text-6xl">🔗</span>
+								<p className="text-base font-medium text-center text-gray-600">NFC kräver att appen öppnas i eget fönster</p>
+								<a
+									href={window.location.href}
+									target="_blank"
+									rel="noreferrer"
+									className="bg-blue-600 text-white font-semibold rounded-2xl px-6 py-3 text-base active:scale-[0.97] transition-transform"
+								>
+									Öppna i nytt fönster
+								</a>
 							</>
 						) : (
 							<>
