@@ -47,36 +47,38 @@ function ScanPage() {
 		}
 	}
 
-	// Start NFC scanning on mount, keep it running indefinitely
 	useEffect(() => {
-		if (typeof window === "undefined" || !("NDEFReader" in window)) return;
+		return () => abortRef.current?.abort();
+	}, []);
+
+	async function startNfc() {
+		if (typeof window === "undefined" || !("NDEFReader" in window)) {
+			setNfcError("NFC stöds inte i den här webbläsaren.");
+			return;
+		}
 
 		const controller = new AbortController();
 		abortRef.current = controller;
 
-		(async () => {
-			try {
-				const reader = new NDEFReader();
-				await reader.scan({ signal: controller.signal });
-				setNfcActive(true);
-				reader.addEventListener("reading", (event) => {
-					loadBracelet(event.serialNumber);
-				});
-				reader.addEventListener("error", () => {
-					setNfcActive(false);
-					setNfcError("NFC-läsning misslyckades.");
-				});
-			} catch (err) {
-				if ((err as { name?: string }).name !== "AbortError") {
-					setNfcActive(false);
-					setNfcError("Kunde inte starta NFC-läsning.");
-				}
+		try {
+			const reader = new NDEFReader();
+			await reader.scan({ signal: controller.signal });
+			setNfcActive(true);
+			setNfcError(null);
+			reader.addEventListener("reading", (event) => {
+				loadBracelet(event.serialNumber);
+			});
+			reader.addEventListener("error", () => {
+				setNfcActive(false);
+				setNfcError("NFC-läsning misslyckades.");
+			});
+		} catch (err) {
+			if ((err as { name?: string }).name !== "AbortError") {
+				setNfcActive(false);
+				setNfcError("Kunde inte starta NFC-läsning.");
 			}
-		})();
-
-		return () => controller.abort();
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		}
+	}
 
 	async function handleHandout(productId: string) {
 		if (!braceletId) return;
@@ -255,9 +257,25 @@ function ScanPage() {
 				)}
 
 				{!braceletId ? (
-					<div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-400">
-						<span className="text-6xl">📱</span>
-						<p className="text-base font-medium">Håll armband mot telefonen</p>
+					<div className="flex-1 flex flex-col items-center justify-center gap-4 text-gray-400">
+						{nfcActive ? (
+							<>
+								<span className="text-6xl">📱</span>
+								<p className="text-base font-medium">Håll armband mot telefonen</p>
+							</>
+						) : (
+							<>
+								<span className="text-6xl">📡</span>
+								<p className="text-base font-medium text-center">Starta NFC-läsning för att scanna armband</p>
+								<button
+									type="button"
+									onClick={startNfc}
+									className="bg-blue-600 text-white font-semibold rounded-2xl px-6 py-3 text-base active:scale-[0.97] transition-transform"
+								>
+									Starta NFC
+								</button>
+							</>
+						)}
 					</div>
 				) : (
 					<>
