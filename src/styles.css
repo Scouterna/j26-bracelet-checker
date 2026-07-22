@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+@keyframes scan-flash {
+	0% {
+		opacity: 0;
+	}
+	15% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+.animate-scan-flash {
+	animation: scan-flash 600ms ease-out forwards;
+}

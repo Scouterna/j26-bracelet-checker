@@ -32,7 +32,16 @@ function ScanPage() {
 	const [busy, setBusy] = useState<string | null>(null);
 	const [actionError, setActionError] = useState<string | null>(null);
 	const [devInput, setDevInput] = useState("");
+	const [scanPulse, setScanPulse] = useState(0);
 	const abortRef = useRef<AbortController | null>(null);
+
+	function signalScan() {
+		if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+			navigator.vibrate(120);
+		}
+		// Bump the key to replay the flash animation on every scan.
+		setScanPulse((n) => n + 1);
+	}
 
 	async function loadBracelet(id: string) {
 		setActionError(null);
@@ -66,6 +75,7 @@ function ScanPage() {
 			setNfcActive(true);
 			setNfcError(null);
 			reader.addEventListener("reading", (event) => {
+				signalScan();
 				loadBracelet(event.serialNumber);
 			});
 			reader.addEventListener("error", () => {
@@ -181,6 +191,15 @@ function ScanPage() {
 
 	return (
 		<div className="flex flex-col h-svh">
+			{/* Scan feedback flash — remounts on each scan to replay the animation */}
+			{scanPulse > 0 && (
+				<div
+					key={scanPulse}
+					aria-hidden="true"
+					className="animate-scan-flash pointer-events-none fixed inset-0 z-50 bg-green-400/40 ring-4 ring-inset ring-green-500"
+				/>
+			)}
+
 			{/* Header */}
 			<header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
 				<div className="flex-1 flex items-center gap-2">
