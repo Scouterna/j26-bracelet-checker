@@ -12,6 +12,7 @@ export const Route = createRootRoute({
 			{ title: "J26 Armbandsscanner" },
 		],
 		links: [{ rel: "stylesheet", href: appCss }],
+		scripts: [{ src: "/auth/static/refresh.js", defer: true }],
 	}),
 	shellComponent: RootDocument,
 });
